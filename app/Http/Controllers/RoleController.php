@@ -1,0 +1,93 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Role;
+use Illuminate\Http\Request;
+
+class RoleController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+   public function index()
+{
+    $rows = Role::whereNull('deleted_at')->get();
+    return view('roles.index', compact('rows'));
+}
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view('roles.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name'=>'required|unique:roles|max:255|min:3',
+
+        ]);
+        try {
+            Role::create([
+                'name'=> $request->name,
+                'description'=>$request->description,
+            ]);
+            return redirect()->route('role.index');
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Role $role)
+    {
+        return view('roles.show', compact('role'));
+    }
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id)
+
+    {
+        $row = Role::findOrFail($id);
+        return view('roles.edit', compact('row'));
+    }
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name'=>'required|unique:roles,name,'.$id.'|max:255|min:3',
+
+        ]);
+        try {
+            $role = Role::findOrFail($id);
+            $role->update([
+                'name'=> $request->name,
+                'description'=>$request->description,
+            ]);
+            return redirect()->route('role.index');
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id)
+    {
+        $role = Role::findOrFail($id);
+        $role->delete();
+        return redirect()->route('role.index');         
+    }
+
+}
